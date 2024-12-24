@@ -37,8 +37,6 @@ public class Main {
 		glfwShowWindow(glfwWindow);
 		GL.createCapabilities();
 
-		final int TARGET_FPS = 60;
-		final double FRAME_TIME = 1.0 / TARGET_FPS; // Frame time in seconds
 		long lastTime = System.nanoTime();
 		double delta = 0;
 
@@ -49,9 +47,9 @@ public class Main {
 
 			glfwPollEvents();
 
-			if (delta >= FRAME_TIME) {
+			if (delta >= Game.TIME_PER_FRAME) {
 				game.update(); // Update game state only when the frame cap is reached
-				delta -= FRAME_TIME; // Subtract the frame time from delta
+				delta -= Game.TIME_PER_FRAME; // Subtract the frame time from delta
 			}
 
 			Main.render();

@@ -3,6 +3,8 @@ package me.serbinskis.burvis.core;
 import java.util.BitSet;
 
 public class Game {
+    public static int FPS = 60;
+    public static double TIME_PER_FRAME = 1.0 / Game.FPS;
     private final long glfwWindow;
     private final Grid grid;
     public BitSet stepped = new BitSet(1);

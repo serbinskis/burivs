@@ -2,26 +2,31 @@ package me.serbinskis.burvis.materials.solids;
 
 import com.badlogic.gdx.math.Vector2;
 import me.serbinskis.burvis.Main;
+import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
+import me.serbinskis.burvis.utils.PhysicsUtils;
 
 import java.awt.*;
 
 public class MovableSolid extends Material {
-    public static float GRAVITY = 10f;
+    public static float GRAVITY = 9.81f;
+    public static float TERMINAL_VELOCITY = 53f;
     public static float FALLING_TIME_INCREASE = 0.05f;
 
     private final float frictionFactor;
     private final float inertialResistance;
+    private final float terminalVelocity;
     private boolean isFreeFalling;
-    private float fallingTime = 0;
+    private double fallingTime = 0;
     private Vector2 velocity;
     private Vector2 acceleration;
 
     public MovableSolid(String name, Color color, float frictionFactor, float inertialResistance, float density) {
         super(name, color, density);
         this.frictionFactor = frictionFactor;
+        this.terminalVelocity = PhysicsUtils.calculateTerminalVelocity(density, GRAVITY);
         this.inertialResistance = inertialResistance;
         this.isFreeFalling = false;
         this.velocity = new Vector2(0, 0);
@@ -34,18 +39,24 @@ public class MovableSolid extends Material {
         super.update(grid, x, y, material);
 
         isFreeFalling = grid.getMaterial(x, y - 1) == MaterialRegistry.EMPTY;
-        fallingTime = isFreeFalling ? Math.clamp(((fallingTime + FALLING_TIME_INCREASE) * 1.1f), 0f, 1f) : 0;
-        velocity.y = Math.clamp(velocity.y + (GRAVITY * fallingTime), -GRAVITY, GRAVITY);
+        fallingTime = isFreeFalling ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
+        velocity.y = (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity);
 
         if (grid.getMaterial(x, y - 1) == MaterialRegistry.EMPTY) {
-            grid.moveMaterial(x,y,  x, y - (int) velocity.y);
+            grid.moveMaterial(x, y, (int) (x + velocity.x), y - (int) velocity.y - 1);
         }
         else if (grid.getMaterial(x + 1, y - 1) == MaterialRegistry.EMPTY && grid.getMaterial(x + 1, y) == MaterialRegistry.EMPTY) {
-            grid.moveMaterial(x, y, x + 1, y - 1);
+            grid.moveMaterial(x, y, (int) (x + velocity.x) + 1, y - 1);
         }
         else if (grid.getMaterial(x - 1, y - 1) == MaterialRegistry.EMPTY && grid.getMaterial(x - 1, y) == MaterialRegistry.EMPTY) {
-            grid.moveMaterial(x, y, x - 1, y - 1);
+            grid.moveMaterial(x, y, (int) (x + velocity.x) - 1, y - 1);
+        } else {
+            //float absY = Math.max(Math.abs(velocity.y) / (GRAVITY / 5), GRAVITY / 2);
+            //velocity.x = velocity.x < 0 ? -absY : absY;
+            //grid.moveMaterial(x, y, (int) (x + velocity.x), y);
         }
+
+        velocity.x *= frictionFactor;
     }
 
     @Override
