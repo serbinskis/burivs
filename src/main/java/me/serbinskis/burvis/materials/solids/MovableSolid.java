@@ -21,7 +21,6 @@ public class MovableSolid extends Material {
     private boolean isFreeFalling;
     private double fallingTime = 0;
     private Vector2 velocity;
-    private Vector2 acceleration;
 
     public MovableSolid(String name, Color color, float frictionFactor, float inertialResistance, float density) {
         super(name, color, density);
@@ -30,7 +29,6 @@ public class MovableSolid extends Material {
         this.inertialResistance = inertialResistance;
         this.isFreeFalling = false;
         this.velocity = new Vector2(0, 0);
-        this.acceleration = new Vector2(0, 0);
 }
 
     @Override
