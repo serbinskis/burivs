@@ -42,7 +42,7 @@ public class Grid {
     public int moveMaterial(int x1, int y1, int x2, int y2) {
         // Get the material at the starting position
         Material material = getMaterial(x1, y1);
-        if (material == null || material == MaterialRegistry.AIR) { return; }
+        if (material == null || material == MaterialRegistry.AIR) { return 0; }
 
         // Calculate the slope of the line
         int dx = x2 - x1;
