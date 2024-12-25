@@ -7,6 +7,7 @@ import me.serbinskis.burvis.materials.MaterialRegistry;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseInput {
+    public static int RADIUS = 1;
     public static int pressed = -1;
 
     public static void register(long glfwWindow) {
@@ -19,14 +20,13 @@ public class MouseInput {
         if (MouseInput.pressed == -1) { return; }
         //System.out.println("Mouse moved to position: (" + x + ", " + y + ")");
 
-        int radius = 10;
         int centerX = (int) x;
         int centerY = Main.height - (int) y;
 
-        for (int i = centerX - radius; i <= centerX + radius; i++) {
-            for (int j = centerY - radius; j <= centerY + radius; j++) {
-                if ((i - centerX) * (i - centerX) + (j - centerY) * (j - centerY) <= radius * radius) {
-                    Material material = MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.createMaterial(MaterialRegistry.SAND) : MaterialRegistry.EMPTY;
+        for (int i = centerX - RADIUS; i <= centerX + RADIUS; i++) {
+            for (int j = centerY - RADIUS; j <= centerY + RADIUS; j++) {
+                if ((i - centerX) * (i - centerX) + (j - centerY) * (j - centerY) <= RADIUS * RADIUS) {
+                    Material material = MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.createMaterial(MaterialRegistry.SAND) : MaterialRegistry.AIR;
                     Main.game.getGrid().setMaterial(i, j, material);
                 }
             }

@@ -3,6 +3,8 @@ package me.serbinskis.burvis.core;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
 
+import java.util.Optional;
+
 public class Grid {
     private final Material[][] materials;
     private final int width;
@@ -28,7 +30,7 @@ public class Grid {
 
     public Material getMaterial(int x, int y) {
         if (x < 0 || x >= width || y < 0 || y >= height) { return null; }
-        return (materials[x][y]) == null ? MaterialRegistry.EMPTY : materials[x][y];
+        return (materials[x][y]) == null ? MaterialRegistry.AIR : materials[x][y];
     }
 
     public void swapMaterial(int x1, int y1, int x2, int y2) {
@@ -37,10 +39,10 @@ public class Grid {
         materials[x2][y2] = temp;
     }
 
-    public void moveMaterial(int x1, int y1, int x2, int y2) {
+    public int moveMaterial(int x1, int y1, int x2, int y2) {
         // Get the material at the starting position
         Material material = getMaterial(x1, y1);
-        if (material == null || material == MaterialRegistry.EMPTY) { return; }
+        if (material == null || material == MaterialRegistry.AIR) { return; }
 
         // Calculate the slope of the line
         int dx = x2 - x1;
@@ -65,9 +67,11 @@ public class Grid {
             if (previousX == nextX && previousY == nextY) { continue; }
             Material material1 = getMaterial((int) previousX, (int) previousY);
             Material material2 = getMaterial((int) nextX, (int) nextY);
-            if (material2 == null || !material1.canSwap(material2)) { break; }
+            if (material2 == null || !material1.canSwap(material2)) { return i; }
             swapMaterial((int) previousX, (int) previousY, (int) nextX, (int) nextY);
         }
+
+        return steps;
     }
 
     public void update() {
@@ -75,7 +79,7 @@ public class Grid {
 
             for (int x = materials.length - 1; x >= 0; x--) {
                 Material material = materials[x][y];
-                if ((material == MaterialRegistry.EMPTY) || (material == null)) { continue; }
+                if ((material == MaterialRegistry.AIR) || (material == null)) { continue; }
                 material.update(this, x, y, material);
             }
         }
@@ -85,8 +89,7 @@ public class Grid {
         // Loop through each material in the grid
         for (int x = 0; x < materials.length; x++) {
             for (int y = 0; y < materials[x].length; y++) {
-                Material material = materials[x][y];
-                if (material == null || material == MaterialRegistry.EMPTY) { continue; }
+                Material material = Optional.ofNullable(materials[x][y]).orElse(MaterialRegistry.AIR);
                 material.render(this, x, y);
             }
         }

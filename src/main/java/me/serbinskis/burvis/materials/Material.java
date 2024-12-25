@@ -60,4 +60,5 @@ public class Material {
     }
 
     public boolean canSwap(Material material) { return false; }
+    public boolean isFalling(Grid grid, int x, int y) { return false; }
 }

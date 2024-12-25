@@ -6,6 +6,8 @@ import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
+import me.serbinskis.burvis.materials.gasses.Gas;
+import me.serbinskis.burvis.materials.liquids.Liquid;
 import me.serbinskis.burvis.utils.PhysicsUtils;
 
 import java.awt.*;
@@ -14,6 +16,7 @@ public class MovableSolid extends Material {
     public static float GRAVITY = 9.81f;
     public static float TERMINAL_VELOCITY = 53f;
     public static float FALLING_TIME_INCREASE = 0.05f;
+    public static float SPREAD_FACTOR = 50f;
 
     private final float frictionFactor;
     private final float inertialResistance;
@@ -36,22 +39,20 @@ public class MovableSolid extends Material {
         if (stepped.get(0) == Main.game.getStepped()) { return; }
         super.update(grid, x, y, material);
 
-        isFreeFalling = grid.getMaterial(x, y - 1) == MaterialRegistry.EMPTY;
-        fallingTime = isFreeFalling ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
-        velocity.y = (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity);
+        fallingTime = this.isFalling(grid, x, y) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
+        //velocity.x += (fallingTime == 0) ? Math.min(Math.abs(velocity.y), this.terminalVelocity) : 0;
+        velocity.y = (fallingTime > 0) ? (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity) : 0;
 
-        if (grid.getMaterial(x, y - 1) == MaterialRegistry.EMPTY) {
+        if (grid.getMaterial(x, y - 1) == MaterialRegistry.AIR) {
             grid.moveMaterial(x, y, (int) (x + velocity.x), y - (int) velocity.y - 1);
         }
-        else if (grid.getMaterial(x + 1, y - 1) == MaterialRegistry.EMPTY && grid.getMaterial(x + 1, y) == MaterialRegistry.EMPTY) {
+        else if (grid.getMaterial(x + 1, y - 1) == MaterialRegistry.AIR && grid.getMaterial(x + 1, y) == MaterialRegistry.AIR) {
             grid.moveMaterial(x, y, (int) (x + velocity.x) + 1, y - 1);
         }
-        else if (grid.getMaterial(x - 1, y - 1) == MaterialRegistry.EMPTY && grid.getMaterial(x - 1, y) == MaterialRegistry.EMPTY) {
+        else if (grid.getMaterial(x - 1, y - 1) == MaterialRegistry.AIR && grid.getMaterial(x - 1, y) == MaterialRegistry.AIR) {
             grid.moveMaterial(x, y, (int) (x + velocity.x) - 1, y - 1);
         } else {
-            //float absY = Math.max(Math.abs(velocity.y) / (GRAVITY / 5), GRAVITY / 2);
-            //velocity.x = velocity.x < 0 ? -absY : absY;
-            //grid.moveMaterial(x, y, (int) (x + velocity.x), y);
+            //grid.moveMaterial(x, y, (int) (x + velocity.x), (int) (y + velocity.y));
         }
 
         velocity.x *= frictionFactor;
@@ -59,6 +60,12 @@ public class MovableSolid extends Material {
 
     @Override
     public boolean canSwap(Material material) {
-        return material == MaterialRegistry.EMPTY;
+        return !(material instanceof ImmovableSolid);
+    }
+
+    @Override
+    public boolean isFalling(Grid grid, int x, int y) {
+        Material material = grid.getMaterial(x, y - 1);
+        return (material instanceof Gas || material instanceof Liquid);
     }
 }
