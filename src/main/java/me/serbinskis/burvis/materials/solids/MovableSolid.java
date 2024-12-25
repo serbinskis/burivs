@@ -40,7 +40,7 @@ public class MovableSolid extends Material {
         super.update(grid, x, y, material);
 
         fallingTime = this.isFalling(grid, x, y) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
-        //velocity.x += (fallingTime == 0) ? Math.min(Math.abs(velocity.y), this.terminalVelocity) : 0;
+        velocity.x += (fallingTime == 0) ? Math.clamp(-this.terminalVelocity, Math.abs(velocity.y/2f) * (Game.RANDOM.nextBoolean() ? -1f : 1f), this.terminalVelocity) : 0;
         velocity.y = (fallingTime > 0) ? (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity) : 0;
 
         if (grid.getMaterial(x, y - 1) == MaterialRegistry.AIR) {

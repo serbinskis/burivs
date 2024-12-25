@@ -1,10 +1,12 @@
 package me.serbinskis.burvis.core;
 
 import java.util.BitSet;
+import java.util.Random;
 
 public class Game {
     public static int FPS = 60;
     public static double TIME_PER_FRAME = 1.0 / Game.FPS;
+    public static Random RANDOM = new Random(System.nanoTime());
     private final long glfwWindow;
     private final Grid grid;
     public BitSet stepped = new BitSet(1);
