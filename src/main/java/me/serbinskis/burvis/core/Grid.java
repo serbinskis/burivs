@@ -145,7 +145,7 @@ public class Grid {
         }
     }
 
-    public void moveMaterial(MovableSolid material, int x1, int y1, int x2, int y2, MovementOptions ...opts) {
+    public void moveMaterial(Material material, int x1, int y1, int x2, int y2, MovementOptions ...opts) {
         MovementRecord record = moveMaterial(x1, y1, x2, y2);
         MovementResult result = record.result();
 

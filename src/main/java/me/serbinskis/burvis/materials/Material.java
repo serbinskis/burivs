@@ -1,6 +1,8 @@
 package me.serbinskis.burvis.materials;
 
+import com.badlogic.gdx.math.Vector2;
 import me.serbinskis.burvis.Main;
+import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 
 import java.awt.*;
@@ -11,10 +13,13 @@ import static org.lwjgl.opengl.GL11.*;
 public class Material {
     public static float CELL_WIDTH = 2.0f / Main.GRID_WIDTH;
     public static float CELL_HEIGHT = 2.0f / Main.GRID_HEIGHT;
+    public static float GRAVITY = 9.81f;
+    public static float SPREAD_FACTOR = 5f;
 
     private final String name;
     public Color color;
     public final float density;
+    public Vector2 velocity = new Vector2();
     public BitSet stepped = new BitSet(1);
 
     public Material(String name, Color color, float density) {
@@ -34,6 +39,23 @@ public class Material {
 
     public float getDensity() {
         return density;
+    }
+
+    public Vector2 getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(Vector2 velocity) {
+        this.velocity = velocity;
+    }
+
+    public float getSpreadVelocityX() {
+        float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
+        return Math.abs(velocity.y/SPREAD_FACTOR) * spreadDirection;
+    }
+
+    public float getSpreadVelocityY() {
+        return Math.abs(velocity.y/SPREAD_FACTOR);
     }
 
     public void update(Grid grid, int x, int y) {

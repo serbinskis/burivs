@@ -14,46 +14,21 @@ import me.serbinskis.burvis.utils.Utils;
 import java.awt.*;
 
 public class MovableSolid extends Solid {
-    public static float GRAVITY = 9.81f;
-    public static float TERMINAL_VELOCITY = 53f;
-    public static float FALLING_TIME_INCREASE = 0.05f;
-    public static float SPREAD_FACTOR = 5f;
-
     private final float frictionFactor;
     private final float inertialResistance;
     private final float terminalVelocity;
-    private boolean isFreeFalling;
     private double fallingTime = 0;
-    private Vector2 velocity;
 
     public MovableSolid(String name, Color color, float frictionFactor, float inertialResistance, float density) {
         super(name, color, density);
         this.frictionFactor = frictionFactor;
         this.terminalVelocity = PhysicsUtils.calculateTerminalVelocity(density, GRAVITY);
         this.inertialResistance = inertialResistance;
-        this.isFreeFalling = false;
         this.velocity = new Vector2(0, 0);
-    }
-
-    public Vector2 getVelocity() {
-        return velocity;
-    }
-
-    public void setVelocity(Vector2 velocity) {
-        this.velocity = velocity;
     }
 
     public float getTerminalVelocity() {
         return terminalVelocity;
-    }
-
-    public float getSpreadVelocityX() {
-        float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
-        return Math.abs(velocity.y/SPREAD_FACTOR) * spreadDirection;
-    }
-
-    public float getSpreadVelocityY() {
-        return Math.abs(velocity.y/SPREAD_FACTOR);
     }
 
     @Override
@@ -65,8 +40,7 @@ public class MovableSolid extends Solid {
         boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
         boolean canMoveRight = !canMoveLeft && this.canSwap(grid.getMaterial(x + 1, y - 1));
 
-        fallingTime = canMoveBellow || canMoveLeft || canMoveRight ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
-        //velocity.x += (fallingTime == 0) ? Math.clamp(Math.abs(velocity.y/3f) * spreadDirection, -terminalVelocity, terminalVelocity) : 0;
+        fallingTime = (canMoveBellow || canMoveLeft || canMoveRight) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
 
         //Add velocity y if falling
         if (canMoveBellow) {
@@ -96,6 +70,7 @@ public class MovableSolid extends Solid {
 
         //if (Main.DEBUG) { System.out.println("velocity: " + ((int) velocity.x) + " " + ((int) velocity.y)); }
         velocity.x *= frictionFactor;
+        velocity.y *= frictionFactor;
         //Main.render();
     }
 
