@@ -2,6 +2,7 @@ package me.serbinskis.burvis;
 
 import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.input.MouseInput;
+import me.serbinskis.burvis.utils.ThreadUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -11,11 +12,14 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Main {
+	public static boolean DEBUG = true;
 	public static Game game;
 	public static long glfwWindow;
 	public static String title = "Burvis";
-	public static int width = 640;
-	public static int height = 640;
+	public static int WIDTH = 800;
+	public static int HEIGHT = 800;
+	public static int GRID_WIDTH = 200;
+	public static int GRID_HEIGHT = 200;
 
     public static void main(String[] args) {
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -26,36 +30,32 @@ public class Main {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
 
-		Main.glfwWindow = glfwCreateWindow(width, height, title, NULL, NULL);
+		Main.glfwWindow = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
 		if (glfwWindow == NULL) { throw new IllegalStateException("Failed to create the GLFW window."); }
-		Main.game = new Game(glfwWindow, width, height);
+		Main.game = new Game(glfwWindow, GRID_WIDTH, GRID_HEIGHT);
 		MouseInput.register(glfwWindow);
 
 		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		glfwSetWindowPos(glfwWindow, (vidmode.width() - width) / 2, (vidmode.height() - height) / 2);
+		glfwSetWindowPos(glfwWindow, (vidmode.width() - WIDTH) / 2, (vidmode.height() - HEIGHT) / 2);
 		glfwMakeContextCurrent(glfwWindow);
 		glfwShowWindow(glfwWindow);
 		GL.createCapabilities();
 
-		long lastTime = System.nanoTime();
-		double delta = 0;
+		Runnable updater = ThreadUtils.startTimer(Game.TIME_PER_FRAME, Main::update);
+		Runnable renderer = ThreadUtils.startTimer(Game.TIME_PER_FRAME, Main::render);
 
 		while (!glfwWindowShouldClose(glfwWindow)) {
-			long now = System.nanoTime();
-			delta += (now - lastTime) / 1e9; // Convert nanoseconds to seconds
-			lastTime = now;
-
 			glfwPollEvents();
-
-			if (delta >= Game.TIME_PER_FRAME) {
-				game.update(); // Update game state only when the frame cap is reached
-				delta -= Game.TIME_PER_FRAME; // Subtract the frame time from delta
-			}
-
-			Main.render();
+			updater.run();
+			renderer.run();
 		}
-        
+
         glfwTerminate();
+		System.exit(0);
+	}
+
+	public static void update() {
+		game.update();
 	}
 
 	public static void render() {

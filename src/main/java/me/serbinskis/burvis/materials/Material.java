@@ -9,21 +9,19 @@ import java.util.BitSet;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Material {
-    public static float CELL_WIDTH = 2.0f / Main.width;
-    public static float CELL_HEIGHT = 2.0f / Main.height;
+    public static float CELL_WIDTH = 2.0f / Main.GRID_WIDTH;
+    public static float CELL_HEIGHT = 2.0f / Main.GRID_HEIGHT;
 
     private final String name;
     public Color color;
     public final float density;
     public BitSet stepped = new BitSet(1);
-    int x = 0;
-    int y = 0;
 
     public Material(String name, Color color, float density) {
         this.name = name;
         this.color = color;
         this.density = density;
-        this.stepped.set(0, Main.game.getStepped());
+        this.stepped.set(0, 0);
     }
 
     public String getName() {
@@ -38,7 +36,7 @@ public class Material {
         return density;
     }
 
-    public void update(Grid grid, int x, int y, Material material) {
+    public void update(Grid grid, int x, int y) {
         stepped.flip(0);
     }
 

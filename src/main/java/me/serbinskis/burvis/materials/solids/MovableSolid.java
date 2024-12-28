@@ -12,11 +12,11 @@ import me.serbinskis.burvis.utils.PhysicsUtils;
 
 import java.awt.*;
 
-public class MovableSolid extends Material {
+public class MovableSolid extends Solid {
     public static float GRAVITY = 9.81f;
     public static float TERMINAL_VELOCITY = 53f;
     public static float FALLING_TIME_INCREASE = 0.05f;
-    public static float SPREAD_FACTOR = 50f;
+    public static float SPREAD_FACTOR = 3f;
 
     private final float frictionFactor;
     private final float inertialResistance;
@@ -32,35 +32,55 @@ public class MovableSolid extends Material {
         this.inertialResistance = inertialResistance;
         this.isFreeFalling = false;
         this.velocity = new Vector2(0, 0);
-}
+    }
+
+    public Vector2 getVelocity() {
+        return velocity;
+    }
+
+    public float getTerminalVelocity() {
+        return terminalVelocity;
+    }
 
     @Override
-    public void update(Grid grid, int x, int y, Material material) {
+    public void update(Grid grid, int x, int y) {
         if (stepped.get(0) == Main.game.getStepped()) { return; }
-        super.update(grid, x, y, material);
+        super.update(grid, x, y);
+
+        boolean canMoveBellow = this.isFalling(grid, x, y);
+        boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
+        boolean canMoveRight = !canMoveLeft && this.canSwap(grid.getMaterial(x + 1, y - 1));
+        //System.out.println(grid.getMaterial(x + 1, y - 1).getName());
+        float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
+        //if (Main.DEBUG) { System.out.println("update: " + x + " " + y + " " + canMoveLeft + " " + canMoveRight); }
 
         fallingTime = this.isFalling(grid, x, y) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
-        velocity.x += (fallingTime == 0) ? Math.clamp(-this.terminalVelocity, Math.abs(velocity.y/2f) * (Game.RANDOM.nextBoolean() ? -1f : 1f), this.terminalVelocity) : 0;
         velocity.y = (fallingTime > 0) ? (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity) : 0;
 
-        if (grid.getMaterial(x, y - 1) == MaterialRegistry.AIR) {
-            grid.moveMaterial(x, y, (int) (x + velocity.x), y - (int) velocity.y - 1);
+        if (canMoveBellow) {
+            if (Main.DEBUG) { System.out.println("canMoveBellow: " + canMoveBellow); }
+            grid.moveMaterial(this, x, y, (int) (x + velocity.x), y - (int) velocity.y - 1, Grid.MovementOptions.ResetVelocity, Grid.MovementOptions.SpreadVelocity);
         }
-        else if (grid.getMaterial(x + 1, y - 1) == MaterialRegistry.AIR && grid.getMaterial(x + 1, y) == MaterialRegistry.AIR) {
-            grid.moveMaterial(x, y, (int) (x + velocity.x) + 1, y - 1);
+        else if (canMoveLeft && ((int) velocity.x) == 0) {
+            if (Main.DEBUG) { System.out.println("canMoveLeft: " + canMoveLeft); }
+            grid.moveMaterial(this, x, y, x - 1, y - 1, Grid.MovementOptions.ResetVelocity);
         }
-        else if (grid.getMaterial(x - 1, y - 1) == MaterialRegistry.AIR && grid.getMaterial(x - 1, y) == MaterialRegistry.AIR) {
-            grid.moveMaterial(x, y, (int) (x + velocity.x) - 1, y - 1);
-        } else {
-            //grid.moveMaterial(x, y, (int) (x + velocity.x), (int) (y + velocity.y));
+        else if (canMoveRight && ((int) velocity.x) == 0) {
+            if (Main.DEBUG) { System.out.println("canMoveRight: " + canMoveRight); }
+            grid.moveMaterial(this, x, y, x + 1, y - 1, Grid.MovementOptions.ResetVelocity);
+        } else if (((int) velocity.x) != 0 || ((int) velocity.y) != 0) {
+            if (Main.DEBUG) { System.out.println("velocity: " + velocity.x + " " + velocity.y); }
+            grid.moveMaterial(this, x, y, (int) (x + velocity.x), (int) (y + velocity.y), Grid.MovementOptions.ResetVelocity);
         }
 
+        //if (Main.DEBUG) { System.out.println("velocity: " + ((int) velocity.x) + " " + ((int) velocity.y)); }
         velocity.x *= frictionFactor;
+        //Main.render();
     }
 
     @Override
     public boolean canSwap(Material material) {
-        return !(material instanceof ImmovableSolid);
+        return (material != null) && !(material instanceof Solid);
     }
 
     @Override

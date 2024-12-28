@@ -7,7 +7,7 @@ import me.serbinskis.burvis.materials.MaterialRegistry;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseInput {
-    public static int RADIUS = 1;
+    public static int RADIUS = Main.DEBUG ? 0 : 5;
     public static int pressed = -1;
 
     public static void register(long glfwWindow) {
@@ -20,13 +20,16 @@ public class MouseInput {
         if (MouseInput.pressed == -1) { return; }
         //System.out.println("Mouse moved to position: (" + x + ", " + y + ")");
 
-        int centerX = (int) x;
-        int centerY = Main.height - (int) y;
+        int centerX = (int) (x * (Main.game.getGrid().getWidth() / (double) Main.WIDTH)); // Mapping x to grid space
+        int centerY = Main.game.getGrid().getHeight() - (int) (y * (Main.game.getGrid().getHeight() / (double) Main.HEIGHT)); // Mapping y to grid space
+
+        //Main.game.getGrid().setMaterial(centerX, centerY, MaterialRegistry.createMaterial(MaterialRegistry.SAND));
+        //Main.game.getGrid().moveMaterial(centerX, centerY, centerX+100, centerY+50);
 
         for (int i = centerX - RADIUS; i <= centerX + RADIUS; i++) {
             for (int j = centerY - RADIUS; j <= centerY + RADIUS; j++) {
                 if ((i - centerX) * (i - centerX) + (j - centerY) * (j - centerY) <= RADIUS * RADIUS) {
-                    Material material = MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.createMaterial(MaterialRegistry.SAND) : MaterialRegistry.AIR;
+                    Material material = MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.createMaterial(MaterialRegistry.SAND) : MaterialRegistry.STONE;
                     Main.game.getGrid().setMaterial(i, j, material);
                 }
             }
