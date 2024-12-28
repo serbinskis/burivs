@@ -1,6 +1,7 @@
 package me.serbinskis.burvis;
 
 import me.serbinskis.burvis.core.Game;
+import me.serbinskis.burvis.input.KeyboardInput;
 import me.serbinskis.burvis.input.MouseInput;
 import me.serbinskis.burvis.utils.ThreadUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -33,7 +34,9 @@ public class Main {
 		Main.glfwWindow = glfwCreateWindow(WIDTH, HEIGHT, title, NULL, NULL);
 		if (glfwWindow == NULL) { throw new IllegalStateException("Failed to create the GLFW window."); }
 		Main.game = new Game(glfwWindow, GRID_WIDTH, GRID_HEIGHT);
+
 		MouseInput.register(glfwWindow);
+		KeyboardInput.register(glfwWindow);
 
 		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowPos(glfwWindow, (vidmode.width() - WIDTH) / 2, (vidmode.height() - HEIGHT) / 2);
@@ -41,12 +44,11 @@ public class Main {
 		glfwShowWindow(glfwWindow);
 		GL.createCapabilities();
 
-		Runnable updater = ThreadUtils.startTimer(Game.TIME_PER_FRAME, Main::update);
+		Runnable updater = ThreadUtils.startThread(Game.TIME_PER_FRAME, Main::update);
 		Runnable renderer = ThreadUtils.startTimer(Game.TIME_PER_FRAME, Main::render);
 
 		while (!glfwWindowShouldClose(glfwWindow)) {
 			glfwPollEvents();
-			updater.run();
 			renderer.run();
 		}
 
@@ -55,7 +57,9 @@ public class Main {
 	}
 
 	public static void update() {
-		game.update();
+		if (!KeyboardInput.isKeyPressed(GLFW_KEY_SPACE)) { game.update(); }
+		if (KeyboardInput.isKeyPressed(GLFW_KEY_ENTER)) { game.update(); }
+		KeyboardInput.setKeyPressed(GLFW_KEY_ENTER, false);
 	}
 
 	public static void render() {

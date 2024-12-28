@@ -1,6 +1,7 @@
 package me.serbinskis.burvis.core;
 
 import me.serbinskis.burvis.Main;
+import me.serbinskis.burvis.input.KeyboardInput;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
 import me.serbinskis.burvis.materials.solids.MovableSolid;
@@ -8,6 +9,9 @@ import me.serbinskis.burvis.utils.Utils;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class Grid {
     private final Material[][] materials;
@@ -19,11 +23,11 @@ public class Grid {
         this.height = height;
         this.materials = new Material[width][height];
 
-        if (Main.DEBUG) {
+        /*if (Main.DEBUG) {
             materials[20][0] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
             materials[19][0] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
             materials[20][1] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
-        }
+        }*/
 
         /*for (int y = 0; y < 200; y++) {
             for (int x = 100; x < 200; x++) {
@@ -117,8 +121,7 @@ public class Grid {
             swapMaterial((int) currentX, (int) currentY, (int) nextX, (int) nextY);
 
             //System.out.println("step: " + i + " | steps: " + steps);
-            //Main.render();
-            //try { Thread.sleep(100); } catch (InterruptedException e) { throw new RuntimeException(e); }
+            if (KeyboardInput.isKeyPressed(GLFW_KEY_SPACE)) { try { Thread.sleep(100); } catch (InterruptedException e) { throw new RuntimeException(e); } }
         }
 
         return new MovementRecord(x2, y2, MovementResult.Success);
