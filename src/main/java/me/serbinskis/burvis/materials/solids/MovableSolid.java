@@ -9,6 +9,7 @@ import me.serbinskis.burvis.materials.MaterialRegistry;
 import me.serbinskis.burvis.materials.gasses.Gas;
 import me.serbinskis.burvis.materials.liquids.Liquid;
 import me.serbinskis.burvis.utils.PhysicsUtils;
+import me.serbinskis.burvis.utils.Utils;
 
 import java.awt.*;
 
@@ -16,7 +17,7 @@ public class MovableSolid extends Solid {
     public static float GRAVITY = 9.81f;
     public static float TERMINAL_VELOCITY = 53f;
     public static float FALLING_TIME_INCREASE = 0.05f;
-    public static float SPREAD_FACTOR = 3f;
+    public static float SPREAD_FACTOR = 5f;
 
     private final float frictionFactor;
     private final float inertialResistance;
@@ -38,8 +39,21 @@ public class MovableSolid extends Solid {
         return velocity;
     }
 
+    public void setVelocity(Vector2 velocity) {
+        this.velocity = velocity;
+    }
+
     public float getTerminalVelocity() {
         return terminalVelocity;
+    }
+
+    public float getSpreadVelocityX() {
+        float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
+        return Math.abs(velocity.y/SPREAD_FACTOR) * spreadDirection;
+    }
+
+    public float getSpreadVelocityY() {
+        return Math.abs(velocity.y/SPREAD_FACTOR);
     }
 
     @Override
@@ -50,27 +64,34 @@ public class MovableSolid extends Solid {
         boolean canMoveBellow = this.isFalling(grid, x, y);
         boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
         boolean canMoveRight = !canMoveLeft && this.canSwap(grid.getMaterial(x + 1, y - 1));
-        //System.out.println(grid.getMaterial(x + 1, y - 1).getName());
-        float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
-        //if (Main.DEBUG) { System.out.println("update: " + x + " " + y + " " + canMoveLeft + " " + canMoveRight); }
 
-        fallingTime = this.isFalling(grid, x, y) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
-        velocity.y = (fallingTime > 0) ? (float) Math.min(velocity.y + fallingTime * GRAVITY, this.terminalVelocity) : 0;
+        fallingTime = canMoveBellow || canMoveLeft || canMoveRight ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
+        //velocity.x += (fallingTime == 0) ? Math.clamp(Math.abs(velocity.y/3f) * spreadDirection, -terminalVelocity, terminalVelocity) : 0;
 
+        //Add velocity y if falling
         if (canMoveBellow) {
-            if (Main.DEBUG) { System.out.println("canMoveBellow: " + canMoveBellow); }
-            grid.moveMaterial(this, x, y, (int) (x + velocity.x), y - (int) velocity.y - 1, Grid.MovementOptions.ResetVelocity, Grid.MovementOptions.SpreadVelocity);
+            if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= (float) (fallingTime * GRAVITY); }
+            if (Main.DEBUG) { System.out.println("canMoveBellow: " + canMoveBellow + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
         }
-        else if (canMoveLeft && ((int) velocity.x) == 0) {
-            if (Main.DEBUG) { System.out.println("canMoveLeft: " + canMoveLeft); }
-            grid.moveMaterial(this, x, y, x - 1, y - 1, Grid.MovementOptions.ResetVelocity);
+        else if (canMoveLeft) {
+            if (Utils.isBetween(velocity.x, -0.50f, 0.01f)) { velocity.x = -0.51f; }
+            if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= 0.51f; }
+            if (Main.DEBUG) { System.out.println("canMoveLeft: " + canMoveLeft + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
         }
-        else if (canMoveRight && ((int) velocity.x) == 0) {
-            if (Main.DEBUG) { System.out.println("canMoveRight: " + canMoveRight); }
-            grid.moveMaterial(this, x, y, x + 1, y - 1, Grid.MovementOptions.ResetVelocity);
-        } else if (((int) velocity.x) != 0 || ((int) velocity.y) != 0) {
+        else if (canMoveRight) {
+            if (Utils.isBetween(velocity.x, -0.01f, 0.51f)) { velocity.x = 0.51f; }
+            if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= 0.51f; }
+            if (Main.DEBUG) { System.out.println("canMoveRight: " + canMoveRight + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+        }
+
+        int nextX = Math.round(x + velocity.x);
+        int nextY = Math.round(y + velocity.y);
+
+        //Move material according to it's velocity
+        if (x != nextX || y != nextY) {
             if (Main.DEBUG) { System.out.println("velocity: " + velocity.x + " " + velocity.y); }
-            grid.moveMaterial(this, x, y, (int) (x + velocity.x), (int) (y + velocity.y), Grid.MovementOptions.ResetVelocity);
+            grid.moveMaterial(this, x, y, nextX, nextY, Grid.MovementOptions.ResetVelocity, Grid.MovementOptions.SpreadVelocity);
+            if (Main.DEBUG) { System.out.println("grid.moveMaterial: " + canMoveRight + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
         }
 
         //if (Main.DEBUG) { System.out.println("velocity: " + ((int) velocity.x) + " " + ((int) velocity.y)); }
