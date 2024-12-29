@@ -58,7 +58,7 @@ public class Grid {
 
     public Material getMaterial(int x, int y) {
         if (isOutsideBounds(x, y)) { return null; }
-        if (materials[x][y] == null) { setMaterialUnsafe(MaterialRegistry.createMaterial(MaterialRegistry.AIR), x, y); }
+        if (materials[x][y] == null) { setMaterialUnsafe(MaterialRegistry.AIR.get(), x, y); }
         return getMaterialUnsafe(x, y);
     }
 
@@ -158,8 +158,8 @@ public class Grid {
         // Loop through each material in the grid
         for (int x = 0; x < materials.length; x++) {
             for (int y = 0; y < materials[x].length; y++) {
-                Material material = Optional.ofNullable(materials[x][y]).orElse(MaterialRegistry.AIR);
-                material.render(this, x, y);
+                Material material = Optional.ofNullable(materials[x][y]).orElse(MaterialRegistry.AIR.get());
+                material.render(this);
             }
         }
     }

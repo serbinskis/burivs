@@ -29,7 +29,7 @@ public class MouseInput {
         for (int i = centerX - RADIUS; i <= centerX + RADIUS; i++) {
             for (int j = centerY - RADIUS; j <= centerY + RADIUS; j++) {
                 if ((i - centerX) * (i - centerX) + (j - centerY) * (j - centerY) <= RADIUS * RADIUS) {
-                    Material material = MaterialRegistry.createMaterial(MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.SAND : MaterialRegistry.WATER);
+                    Material material = MouseInput.pressed == GLFW_MOUSE_BUTTON_LEFT ? MaterialRegistry.SAND.get() : MaterialRegistry.WATER.get();
                     Main.game.getGrid().setMaterial(material, i, j);
                 }
             }

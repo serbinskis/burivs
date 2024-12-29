@@ -60,7 +60,7 @@ public class Material {
         stepped.flip(0);
     }
 
-    public void render(Grid grid, int x, int y) {
+    public void render(Grid grid) {
         glColor3f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f);
 
         // Calculate the cell's corners in OpenGL coordinates
