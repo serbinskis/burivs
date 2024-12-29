@@ -12,7 +12,6 @@ import me.serbinskis.burvis.utils.PhysicsUtils;
 import me.serbinskis.burvis.utils.Utils;
 
 import java.awt.*;
-import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
@@ -57,11 +56,11 @@ public class Liquid extends Material {
     }
 
     @Override
-    public void update(Grid grid, int x, int y) {
+    public void update(Grid grid) {
         if (stepped.get(0) == Main.game.getStepped()) { return; }
-        super.update(grid, x, y);
+        super.update(grid);
 
-        boolean canMoveBellow = this.isFalling(grid, x, y);
+        boolean canMoveBellow = this.isFalling(grid);
         boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y));
         boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(x + 1, y));
         boolean canMoveLeftDown = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
@@ -114,7 +113,7 @@ public class Liquid extends Material {
     }
 
     @Override
-    public boolean isFalling(Grid grid, int x, int y) {
+    public boolean isFalling(Grid grid) {
         Material material = grid.getMaterial(x, y - 1);
         if (material instanceof Liquid) { return getDensity() > material.getDensity(); }
         return (material instanceof Gas);

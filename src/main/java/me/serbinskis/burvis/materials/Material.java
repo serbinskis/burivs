@@ -19,8 +19,10 @@ public class Material {
     private final String name;
     public Color color;
     public final float density;
-    public Vector2 velocity = new Vector2();
+    public Vector2 velocity = new Vector2(0, 0);
     public BitSet stepped = new BitSet(1);
+    public int x = -1;
+    public int y = -1;
 
     public Material(String name, Color color, float density) {
         this.name = name;
@@ -29,25 +31,21 @@ public class Material {
         this.stepped.set(0, 0);
     }
 
-    public String getName() {
-        return name;
+    public String getName() { return name; }
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public void setX(int x) { this.x = x; }
+    public void setY(int y) { this.y = y; }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public float getDensity() {
-        return density;
-    }
-
-    public Vector2 getVelocity() {
-        return velocity;
-    }
-
-    public void setVelocity(Vector2 velocity) {
-        this.velocity = velocity;
-    }
+    public Color getColor() { return color; }
+    public float getDensity() { return density; }
+    public Vector2 getVelocity() { return velocity; }
+    public void setVelocity(Vector2 velocity) { this.velocity = velocity; }
 
     public float getSpreadVelocityX() {
         float spreadDirection = Game.RANDOM.nextBoolean() ? -1f : 1f;
@@ -58,7 +56,7 @@ public class Material {
         return Math.abs(velocity.y/SPREAD_FACTOR);
     }
 
-    public void update(Grid grid, int x, int y) {
+    public void update(Grid grid) {
         stepped.flip(0);
     }
 
@@ -80,5 +78,10 @@ public class Material {
     }
 
     public boolean canSwap(Material material) { return false; }
-    public boolean isFalling(Grid grid, int x, int y) { return false; }
+    public boolean isFalling(Grid grid) { return false; }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj != null) && getClass().equals(obj.getClass());
+    }
 }

@@ -5,7 +5,6 @@ import me.serbinskis.burvis.Main;
 import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 import me.serbinskis.burvis.materials.Material;
-import me.serbinskis.burvis.materials.MaterialRegistry;
 import me.serbinskis.burvis.materials.gasses.Gas;
 import me.serbinskis.burvis.materials.liquids.Liquid;
 import me.serbinskis.burvis.utils.PhysicsUtils;
@@ -32,11 +31,11 @@ public class MovableSolid extends Solid {
     }
 
     @Override
-    public void update(Grid grid, int x, int y) {
+    public void update(Grid grid) {
         if (stepped.get(0) == Main.game.getStepped()) { return; }
-        super.update(grid, x, y);
+        super.update(grid);
 
-        boolean canMoveBellow = this.isFalling(grid, x, y);
+        boolean canMoveBellow = this.isFalling(grid);
         boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
         boolean canMoveRight = !canMoveLeft && this.canSwap(grid.getMaterial(x + 1, y - 1));
 
@@ -80,7 +79,7 @@ public class MovableSolid extends Solid {
     }
 
     @Override
-    public boolean isFalling(Grid grid, int x, int y) {
+    public boolean isFalling(Grid grid) {
         Material material = grid.getMaterial(x, y - 1);
         return (material instanceof Gas || material instanceof Liquid);
     }

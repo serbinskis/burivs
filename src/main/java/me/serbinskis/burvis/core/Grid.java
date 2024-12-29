@@ -4,13 +4,10 @@ import me.serbinskis.burvis.Main;
 import me.serbinskis.burvis.input.KeyboardInput;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
-import me.serbinskis.burvis.materials.solids.MovableSolid;
-import me.serbinskis.burvis.utils.Utils;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class Grid {
@@ -45,27 +42,46 @@ public class Grid {
         return width;
     }
 
-    public void setMaterial(int x, int y, Material material) {
-        if (x < 0 || x >= width || y < 0 || y >= height) { return; }
-        materials[x][y] = material;
+    public boolean isOutsideBounds(int x, int y) {
+        return (x < 0 || x >= width || y < 0 || y >= height);
+    }
+
+    public boolean setMaterial(Material material, int x, int y) {
+        if (isOutsideBounds(x, y)) { return false; }
+        setMaterialUnsafe(material, x, y);
+        return true;
+    }
+
+    public void setMaterialUnsafe(Material material, int x, int y) {
+        (materials[x][y] = material).setPosition(x, y);
     }
 
     public Material getMaterial(int x, int y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) { return null; }
-        return (materials[x][y]) == null ? MaterialRegistry.AIR : materials[x][y];
+        if (isOutsideBounds(x, y)) { return null; }
+        if (materials[x][y] == null) { setMaterialUnsafe(MaterialRegistry.createMaterial(MaterialRegistry.AIR), x, y); }
+        return getMaterialUnsafe(x, y);
     }
 
-    public void swapMaterial(int x1, int y1, int x2, int y2) {
-        Material temp = materials[x1][y1];
-        materials[x1][y1] = materials[x2][y2];
-        materials[x2][y2] = temp;
+    public Material getMaterialUnsafe(int x, int y) {
+        return materials[x][y];
+    }
+
+    public boolean swapMaterial(int x1, int y1, int x2, int y2) {
+        if (isOutsideBounds(x1, y1) || isOutsideBounds(x2, y2)) { return false; }
+        swapMaterialUnsafe(x1, y1, x2, y2);
+        return true;
+    }
+
+    public void swapMaterialUnsafe(int x1, int y1, int x2, int y2) {
+        Material temp = getMaterialUnsafe(x1, y1);
+        setMaterialUnsafe(materials[x2][y2], x1, y1);
+        setMaterialUnsafe(temp, x2, y2);
     }
 
     public MovementRecord moveMaterial(int x1, int y1, int x2, int y2) {
         // Get the material at the starting position
         if (Main.DEBUG) { System.out.println("moveMaterial: " + x1 + " " + y1 + " " + x2 + " " + y2); }
-        Material material = getMaterial(x1, y1);
-        if (material == null || material == MaterialRegistry.AIR) { return new MovementRecord(x1, y1, MovementResult.NoChange); }
+        if (MaterialRegistry.AIR.equals(getMaterial(x1, y1))) { return new MovementRecord(x1, y1, MovementResult.NoChange); }
 
         // Calculate the slope of the line
         int dx = x2 - x1;
@@ -118,7 +134,7 @@ public class Grid {
 
             //Swap materials
             if (Main.DEBUG) { System.out.println("step: " + i + " " + canMoveNext + " " + canMoveDiagonalX + " " + canMoveDiagonalY); }
-            swapMaterial((int) currentX, (int) currentY, (int) nextX, (int) nextY);
+            swapMaterialUnsafe((int) currentX, (int) currentY, (int) nextX, (int) nextY);
 
             //System.out.println("step: " + i + " | steps: " + steps);
             if (KeyboardInput.isKeyPressed(GLFW_KEY_SPACE)) { try { Thread.sleep(100); } catch (InterruptedException e) { throw new RuntimeException(e); } }
@@ -131,9 +147,9 @@ public class Grid {
         for (int y = 0; y < materials[0].length; y++) {
 
             for (int x = materials.length - 1; x >= 0; x--) {
-                Material material = materials[x][y];
-                if ((material == MaterialRegistry.AIR) || (material == null)) { continue; }
-                material.update(this, x, y);
+                Material material = getMaterialUnsafe(x, y);
+                if ((material == null) || MaterialRegistry.AIR.equals(material)) { continue; }
+                material.update(this);
             }
         }
     }
