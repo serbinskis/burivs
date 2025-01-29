@@ -29,7 +29,7 @@ public class ThreadUtils {
 
     public static Runnable startTimer(double interval, Runnable runnable) {
         final long[] lastTime = { System.nanoTime() };
-        final double[] delta = {0};
+        final double[] delta = { 0 };
 
         // Return the runnable that implements the timer logic
         return () -> {

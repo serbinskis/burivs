@@ -6,6 +6,6 @@ import java.awt.*;
 
 public class Water extends Liquid {
     public Water() {
-        super("water", Color.BLUE, 0.9f, 0.1f, 99);
+        super("water", Color.BLUE, 0.9f, 0.1f, 997f);
     }
 }

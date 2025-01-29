@@ -4,6 +4,7 @@ import me.serbinskis.burvis.Main;
 import me.serbinskis.burvis.input.KeyboardInput;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.MaterialRegistry;
+import me.serbinskis.burvis.materials.solids.MovableSolid;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,18 +21,10 @@ public class Grid {
         this.height = height;
         this.materials = new Material[width][height];
 
-        /*if (Main.DEBUG) {
-            materials[20][0] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
-            materials[19][0] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
-            materials[20][1] = MaterialRegistry.createMaterial(MaterialRegistry.SAND);
-        }*/
-
-        /*for (int y = 0; y < 200; y++) {
-            for (int x = 100; x < 200; x++) {
-                materials[x][y] = MaterialRegistry.SAND;
-                //materials[x][y] = new MaterialRegistry.Material(new Color((x / 200f),(y / 200f), 1.0f), 0);
-            }
-        }*/
+        //if (Main.DEBUG) { this.setMaterial(MaterialRegistry.SAND.get(), 20, 0); }
+        //if (Main.DEBUG) {this.setMaterial(MaterialRegistry.SAND.get(), 19, 0); }
+        //if (Main.DEBUG) {this.setMaterial(MaterialRegistry.SAND.get(), 20, 1); }
+        if (Main.DEBUG) {this.setMaterial(MaterialRegistry.SAND.get(), 20, 3); }
     }
 
     public int getHeight() {
@@ -49,6 +42,7 @@ public class Grid {
     public boolean setMaterial(Material material, int x, int y) {
         if (isOutsideBounds(x, y)) { return false; }
         setMaterialUnsafe(material, x, y);
+        material.setGrid(this);
         return true;
     }
 
@@ -145,8 +139,7 @@ public class Grid {
 
     public void update() {
         for (int y = 0; y < materials[0].length; y++) {
-
-            for (int x = materials.length - 1; x >= 0; x--) {
+            for (int x = 0; x < materials.length; x++) {
                 Material material = getMaterialUnsafe(x, y);
                 if ((material == null) || MaterialRegistry.AIR.equals(material)) { continue; }
                 material.update(this);
@@ -173,26 +166,28 @@ public class Grid {
 
         //There is chance that we move to empty cell, but next cell is occupied
         //For this we update the result, so that we know before hands if we will hit that neighbour
-        if ((opts.length > 0) && (result == MovementResult.Success)) {
+        /*if ((opts.length > 0) && (result == MovementResult.Success)) {
             Material horizontal = getMaterial(record.x() + (x2 > x1 ? 1 : -1), record.y());
             Material vertical = getMaterial(record.x(), record.y() + (y2 > y1 ? 1 : -1));
+            boolean isFreeFalling = vertical instanceof MovableSolid solid && solid.isFalling();
             boolean canSwapHorizontal = (horizontal != null && material.canSwap(horizontal));
             boolean canSwapVertical = (vertical != null && material.canSwap(vertical));
             if (!canSwapHorizontal && !canSwapVertical) { result = MovementResult.HitXY; }
-            if (canSwapHorizontal && !canSwapVertical) { result = MovementResult.HitY; }
+            if (canSwapHorizontal && !canSwapVertical && !isFreeFalling) { result = MovementResult.HitY; }
             if (!canSwapHorizontal && canSwapVertical) { result = MovementResult.HitX; }
-        }
+        }*/
 
         if (Main.DEBUG) { System.out.println(result); }
         float spreadVelocityX = material.getSpreadVelocityX();
         float spreadVelocityY = material.getSpreadVelocityY();
+        boolean isFreeFalling = getMaterial(record.x(), record.y() + (y2 > y1 ? 1 : -1)) instanceof MovableSolid solid && solid.isFreeFalling(this);
 
         //If we hit vertically or horizontally reset velocity
         if (resetVelocity && (result == MovementResult.HitX || result == MovementResult.HitXY)) { material.getVelocity().x = 0; }
         if (resetVelocity && (result == MovementResult.HitY || result == MovementResult.HitXY)) { material.getVelocity().y = 0; }
 
         //If we hit vertically we spread vertical velocity to horizontal
-        if (spreadVelocity && (result == MovementResult.HitY)) {
+        if (spreadVelocity && !isFreeFalling && (result == MovementResult.HitY)) {
             material.getVelocity().x += spreadVelocityX;
             material.getVelocity().y += spreadVelocityY;
         }

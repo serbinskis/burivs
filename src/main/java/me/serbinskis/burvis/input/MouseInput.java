@@ -7,7 +7,7 @@ import me.serbinskis.burvis.materials.MaterialRegistry;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class MouseInput {
-    public static int RADIUS = Main.DEBUG ? 5 : 5;
+    public static int RADIUS = Main.DEBUG ? 0 : 5;
     public static int pressed = -1;
 
     public static void register(long glfwWindow) {

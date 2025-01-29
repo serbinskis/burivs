@@ -13,6 +13,7 @@ import me.serbinskis.burvis.utils.Utils;
 
 import java.awt.*;
 
+import static me.serbinskis.burvis.utils.PhysicsUtils.GRAVITY;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
@@ -27,7 +28,7 @@ public class Liquid extends Material {
     public Liquid(String name, Color color, float frictionFactor, float inertialResistance, float density) {
         super(name, color, density);
         this.frictionFactor = frictionFactor;
-        this.terminalVelocity = PhysicsUtils.calculateTerminalVelocity(density, GRAVITY);
+        this.terminalVelocity = PhysicsUtils.calculateGameTerminalVelocity(density, GRAVITY);
         this.inertialResistance = inertialResistance;
         this.velocity = new Vector2(0, 0);
         this.spreadFactor = 0f;
@@ -112,7 +113,6 @@ public class Liquid extends Material {
         return (material != null) && !(material instanceof Solid);
     }
 
-    @Override
     public boolean isFalling(Grid grid) {
         Material material = grid.getMaterial(x, y - 1);
         if (material instanceof Liquid) { return getDensity() > material.getDensity(); }

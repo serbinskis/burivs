@@ -13,7 +13,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Main {
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	public static Game game;
 	public static long glfwWindow;
 	public static String title = "Burvis";

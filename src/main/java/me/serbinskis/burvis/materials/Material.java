@@ -13,10 +13,10 @@ import static org.lwjgl.opengl.GL11.*;
 public class Material {
     public static float CELL_WIDTH = 2.0f / Main.GRID_WIDTH;
     public static float CELL_HEIGHT = 2.0f / Main.GRID_HEIGHT;
-    public static float GRAVITY = 9.81f;
-    public static float SPREAD_FACTOR = 5f;
+    public static float SPREAD_FACTOR = 2f;
 
     private final String name;
+    private Grid grid;
     public Color color;
     public final float density;
     public Vector2 velocity = new Vector2(0, 0);
@@ -36,6 +36,14 @@ public class Material {
     public int getY() { return y; }
     public void setX(int x) { this.x = x; }
     public void setY(int y) { this.y = y; }
+
+    public void setGrid(Grid grid) {
+        this.grid = grid;
+    }
+
+    public Grid getGrid() {
+        return grid;
+    }
 
     public void setPosition(int x, int y) {
         this.x = x;
@@ -60,6 +68,8 @@ public class Material {
         stepped.flip(0);
     }
 
+    public void step(Grid grid) {}
+
     public void render(Grid grid) {
         glColor3f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f);
 
@@ -78,7 +88,6 @@ public class Material {
     }
 
     public boolean canSwap(Material material) { return false; }
-    public boolean isFalling(Grid grid) { return false; }
 
     @Override
     public boolean equals(Object obj) {
