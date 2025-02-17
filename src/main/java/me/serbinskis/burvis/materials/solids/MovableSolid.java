@@ -2,13 +2,11 @@ package me.serbinskis.burvis.materials.solids;
 
 import com.badlogic.gdx.math.Vector2;
 import me.serbinskis.burvis.Main;
-import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.gasses.Gas;
 import me.serbinskis.burvis.materials.liquids.Liquid;
 import me.serbinskis.burvis.utils.PhysicsUtils;
-import me.serbinskis.burvis.utils.Utils;
 
 import java.awt.*;
 
@@ -37,7 +35,7 @@ public class MovableSolid extends Solid {
     }
 
     public boolean isFreeFalling(Grid grid) {
-        Material material = grid.getMaterial(x, y - 1);
+        Material material = grid.getMaterial(getX(), getY() - 1);
         if (material instanceof MovableSolid solid) { return solid.isFreeFalling(grid); }
         return (material instanceof Gas || material instanceof Liquid);
     }
@@ -48,11 +46,11 @@ public class MovableSolid extends Solid {
         super.update(grid);
 
         boolean canMoveBellow = this.isFreeFalling(grid);
-        boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
-        boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(x + 1, y - 1));
-        boolean isFreeFalling = (canMoveBellow || canMoveLeft || canMoveRight);
+        //boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(getY() - 1, getY() - 1));
+        //boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(getY() + 1, getY() - 1));
+        //boolean isFreeFalling = (canMoveBellow || canMoveLeft || canMoveRight);
 
-        //Utils.debug("x: " + x + " y: " + y + " canMoveBellow: " + canMoveBellow + " canMoveLeft: " + canMoveLeft + " canMoveRight: " + canMoveRight);
+        /*//Utils.debug("x: " + x + " y: " + y + " canMoveBellow: " + canMoveBellow + " canMoveLeft: " + canMoveLeft + " canMoveRight: " + canMoveRight);
 
         Utils.debug("velocity.y before frictionFactor: " + velocity.y);
         velocity.x *= frictionFactor * (isFreeFalling ? 0.5f : 1f);
@@ -63,16 +61,16 @@ public class MovableSolid extends Solid {
         //if (canMoveLeft) { velocity.x -= 1f; } else if (canMoveRight) { velocity.x += 1f; }
         Utils.debug("velocity.y after isFreeFalling: " + velocity.y);
 
-        int nextX = Math.round(x + velocity.x);
-        int nextY = Math.round(y + velocity.y);
+        int nextX = Math.round(getX() + velocity.x);
+        int nextY = Math.round(getY() + velocity.y);
 
-        if (x == nextX && y == nextY) { return; }
-        Grid.MovementRecord record = grid.moveMaterial(x, y, nextX, nextY);
+        if (getX() == nextX && getY() == nextY) { return; }
+        Grid.MovementRecord record = grid.moveMaterial(getX(), getY(), nextX, nextY);
         //Utils.debug("drag: " + PhysicsUtils.calculateVerticalDrag(this.getDensity(), velocity.y));
 
         if (record.result().equals(Grid.MovementResult.HitY)) { velocity.y = -velocity.y * PhysicsUtils.COF; } //Make solid bounce when hitting ground, but it should lose some of the velocity
         if (record.result().equals(Grid.MovementResult.HitY) && (velocity.y < 1)) { velocity.y = 0f; } //Without this, it can cause infinite bouncing
-        Utils.debug("velocity.y after HitY: " + velocity.y);
+        Utils.debug("velocity.y after HitY: " + velocity.y);*/
     }
 
     /*@Override

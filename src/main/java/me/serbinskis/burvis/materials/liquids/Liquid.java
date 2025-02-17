@@ -62,10 +62,10 @@ public class Liquid extends Material {
         super.update(grid);
 
         boolean canMoveBellow = this.isFalling(grid);
-        boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y));
-        boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(x + 1, y));
-        boolean canMoveLeftDown = !canMoveBellow && this.canSwap(grid.getMaterial(x - 1, y - 1));
-        boolean canMoveRightDown = !canMoveLeftDown && this.canSwap(grid.getMaterial(x + 1, y - 1));
+        boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(getX() - 1, getY()));
+        boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(getX() + 1, getY()));
+        boolean canMoveLeftDown = !canMoveBellow && this.canSwap(grid.getMaterial(getX() - 1, getY() - 1));
+        boolean canMoveRightDown = !canMoveLeftDown && this.canSwap(grid.getMaterial(getX() + 1, getY() - 1));
 
         fallingTime = (canMoveBellow || canMoveLeft || canMoveRight) ? Math.min((fallingTime + Game.TIME_PER_FRAME), Short.MAX_VALUE) : 0;
         int randomDirection = (canMoveLeft && canMoveRight) ? (Game.RANDOM.nextBoolean() ? -1 : 1) : canMoveLeft ? -1 : 1;
@@ -74,31 +74,31 @@ public class Liquid extends Material {
         if (canMoveBellow) {
             if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= (float) (fallingTime * GRAVITY); }
             if (Utils.isBetween(velocity.y, -0.50f, 0.01f)) { velocity.y = -0.51f; }
-            if (Main.DEBUG) { System.out.println("canMoveBellow: " + canMoveBellow + " " + fallingTime + " " + velocity.y + " " + x + " " + Math.round(x + velocity.y)); }
+            if (Main.DEBUG) { System.out.println("canMoveBellow: " + canMoveBellow + " " + fallingTime + " " + velocity.y + " " + getX() + " " + Math.round(getX() + velocity.y)); }
         } else if (canMoveLeftDown) {
             if (Utils.isBetween(velocity.x, -0.50f, 0.01f)) { velocity.x = -0.51f; }
             if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= 0.51f; }
-            if (Main.DEBUG) { System.out.println("canMoveLeftDown: " + canMoveLeftDown + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+            if (Main.DEBUG) { System.out.println("canMoveLeftDown: " + canMoveLeftDown + " " + fallingTime + " " + velocity.x + " " + getX() + " " + Math.round(getX() + velocity.x)); }
         }  else if (canMoveRightDown) {
             if (Utils.isBetween(velocity.x, -0.01f, 0.51f)) { velocity.x = 0.51f; }
             if ((velocity.y > -this.terminalVelocity)) { this.velocity.y -= 0.51f; }
-            if (Main.DEBUG) { System.out.println("canMoveRightDown: " + canMoveRightDown + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+            if (Main.DEBUG) { System.out.println("canMoveRightDown: " + canMoveRightDown + " " + fallingTime + " " + velocity.x + " " + getX() + " " + Math.round(getX() + velocity.x)); }
         } else if (canMoveLeft && randomDirection == -1) {
             if (Utils.isBetween(velocity.x, -0.50f - spreadFactor, 0.01f)) { velocity.x = -0.51f - spreadFactor; }
-            if (Main.DEBUG) { System.out.println("canMoveLeft: " + canMoveLeft + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+            if (Main.DEBUG) { System.out.println("canMoveLeft: " + canMoveLeft + " " + fallingTime + " " + velocity.x + " " + getX() + " " + Math.round(getX() + velocity.x)); }
         } else if (canMoveRight && randomDirection == 1) {
             if (Utils.isBetween(velocity.x, -0.01f, 0.51f + spreadFactor)) { velocity.x = 0.51f + spreadFactor; }
-            if (Main.DEBUG) { System.out.println("canMoveRight: " + canMoveRight + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+            if (Main.DEBUG) { System.out.println("canMoveRight: " + canMoveRight + " " + fallingTime + " " + velocity.x + " " + getX() + " " + Math.round(getX() + velocity.x)); }
         }
 
-        int nextX = Math.round(x + velocity.x);
-        int nextY = Math.round(y + velocity.y);
+        int nextX = Math.round(getX() + velocity.x);
+        int nextY = Math.round(getY() + velocity.y);
 
         //Move material according to it's velocity
-        if (x != nextX || y != nextY) {
+        if (getX() != nextX || getY() != nextY) {
             if (Main.DEBUG) { System.out.println("velocity: " + velocity.x + " " + velocity.y); }
-            grid.moveMaterial(this, x, y, nextX, nextY, Grid.MovementOptions.ResetVelocity, Grid.MovementOptions.SpreadVelocity);
-            if (Main.DEBUG) { System.out.println("grid.moveMaterial: " + canMoveBellow + " " + fallingTime + " " + velocity.x + " " + x + " " + Math.round(x + velocity.x)); }
+            grid.moveMaterial(this, getX(), getY(), nextX, nextY, Grid.MovementOptions.ResetVelocity, Grid.MovementOptions.SpreadVelocity);
+            if (Main.DEBUG) { System.out.println("grid.moveMaterial: " + canMoveBellow + " " + fallingTime + " " + velocity.x + " " + getX() + " " + Math.round(getX() + velocity.x)); }
             while (KeyboardInput.isKeyPressed(GLFW_KEY_SPACE) && !KeyboardInput.isKeyPressed(GLFW_KEY_ENTER, false)) { try { Thread.sleep(1); } catch (InterruptedException ignored) {} }
         }
 
@@ -114,7 +114,7 @@ public class Liquid extends Material {
     }
 
     public boolean isFalling(Grid grid) {
-        Material material = grid.getMaterial(x, y - 1);
+        Material material = grid.getMaterial(getX(), getY()- 1);
         if (material instanceof Liquid) { return getDensity() > material.getDensity(); }
         return (material instanceof Gas);
     }
