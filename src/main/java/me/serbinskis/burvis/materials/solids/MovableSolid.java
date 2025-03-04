@@ -1,29 +1,29 @@
 package me.serbinskis.burvis.materials.solids;
 
-import com.badlogic.gdx.math.Vector2;
 import me.serbinskis.burvis.Main;
+import me.serbinskis.burvis.core.Game;
 import me.serbinskis.burvis.core.Grid;
 import me.serbinskis.burvis.materials.Material;
 import me.serbinskis.burvis.materials.gasses.Gas;
 import me.serbinskis.burvis.materials.liquids.Liquid;
 import me.serbinskis.burvis.utils.PhysicsUtils;
+import me.serbinskis.burvis.utils.Utils;
 
 import java.awt.*;
 
 import static me.serbinskis.burvis.utils.PhysicsUtils.GRAVITY;
 
 public class MovableSolid extends Solid {
-    private final float frictionFactor;
-    private final float inertialResistance;
     private final float terminalVelocity;
     private boolean isFalling = false;
 
-    public MovableSolid(String name, Color color, float frictionFactor, float inertialResistance, float density) {
+    public MovableSolid(String name, Color color, float density) {
         super(name, color, density);
-        this.frictionFactor = frictionFactor;
         this.terminalVelocity = PhysicsUtils.calculateGameTerminalVelocity(density, GRAVITY);
-        this.inertialResistance = inertialResistance;
-        this.velocity = new Vector2(0, 0);
+        this.setElasticity(0.15f);
+        this.setFriction(0.95f);
+        this.setAirResistance(0.03f);
+        //this.addVelocity(10, 0);
     }
 
     public float getTerminalVelocity() {
@@ -46,6 +46,19 @@ public class MovableSolid extends Solid {
         super.update(grid);
 
         boolean canMoveBellow = this.isFreeFalling(grid);
+        boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(getY() - 1, getY() - 1));
+        boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(getY() + 1, getY() - 1));
+        boolean isFreeFalling = (canMoveBellow || canMoveLeft || canMoveRight);
+        if (isFreeFalling && (velocity.y > -this.terminalVelocity)) { this.velocity.y -= (float) (Game.TIME_PER_FRAME * GRAVITY); }
+        if (canMoveLeft) { velocity.x -= 1f; } else if (canMoveRight) { velocity.x += 1f; }
+        Grid.MovementRecord record = grid.moveMaterial(getX(), getY(), getVelocity());
+        if (record.result().equals(Grid.MovementResult.HitY) || record.result().equals(Grid.MovementResult.HitXY)) { velocity.y = -velocity.y * getElasticity(); }
+        if (record.result().equals(Grid.MovementResult.HitX) || record.result().equals(Grid.MovementResult.HitXY)) { velocity.x = -velocity.x * getElasticity(); }
+
+        velocity.x *= (isFreeFalling ? (1 - getAirResistance()) : (1 - getFriction()));
+
+        Utils.debug("velocity.y: " + velocity.y + " | velocity.x: " + velocity.x);
+
         //boolean canMoveLeft = !canMoveBellow && this.canSwap(grid.getMaterial(getY() - 1, getY() - 1));
         //boolean canMoveRight = !canMoveBellow && this.canSwap(grid.getMaterial(getY() + 1, getY() - 1));
         //boolean isFreeFalling = (canMoveBellow || canMoveLeft || canMoveRight);

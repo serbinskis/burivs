@@ -1,5 +1,6 @@
 package me.serbinskis.burvis.core;
 
+import com.badlogic.gdx.math.Vector2;
 import me.serbinskis.burvis.Main;
 import me.serbinskis.burvis.input.KeyboardInput;
 import me.serbinskis.burvis.materials.Material;
@@ -72,8 +73,19 @@ public class Grid {
         setMaterialUnsafe(temp, x2, y2);
     }
 
+    public MovementRecord moveMaterial(int x, int y, Vector2 velocity) {
+        int nextX = Math.abs(velocity.x) < 0.15f ? (int) (x + velocity.x) : Math.round(x + velocity.x); //Without this it just bounces infinitely, even without perfect elasticity
+        int nextY = Math.abs(velocity.y) < 0.15f ? (int) (y + velocity.y) : Math.round(y + velocity.y); //DON'T ASK ME WHAT IS THIS, IDK MYSELF
+        return moveMaterial(x, y, nextX, nextY);
+
+        //return moveMaterial(x, y, (int) (x + velocity.x), (int) (y + velocity.y)); //No infinite jumping, but perfect elasticity doesn't work
+        //return moveMaterial(x, y, (int) Math.round(x + velocity.x), (int) Math.round(y + velocity.y)); //Perfect elasticity works
+        //return moveMaterial(x, y, (int) Math.ceil(x + velocity.x), (int) Math.ceil(y + velocity.y));
+    }
+
     public MovementRecord moveMaterial(int x1, int y1, int x2, int y2) {
         // Get the material at the starting position
+        if ((x1 == x2) && (y1 == y2)) { return new MovementRecord(x1, y1, MovementResult.NoChange); }
         if (Main.DEBUG) { System.out.println("moveMaterial: " + x1 + " " + y1 + " " + x2 + " " + y2); }
         if (MaterialRegistry.AIR.equals(getMaterial(x1, y1))) { return new MovementRecord(x1, y1, MovementResult.NoChange); }
 
